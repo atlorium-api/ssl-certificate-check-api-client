@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Node
+node_modules/
+*.tsbuildinfo
+
+# Go
+/go/ssl-certificate-check-api-client
+*.exe
+
+# .NET
+bin/
+obj/
+
+# Java
+*.class
+
+# Секреты — боевой ключ живёт в переменной окружения, а не в файле
+.env
+.env.local
+
+# Редакторы
+.idea/
+.vscode/
+.DS_Store

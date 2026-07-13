@@ -1,0 +1,90 @@
+# Гоняет все шесть примеров против живого API на публичном демо-ключе.
+#
+# Смысл двойной:
+#   1. Примеры в репозитории гарантированно рабочие — не «когда-то работали».
+#   2. Еженедельный запуск ловит расхождение примеров с API, если контракт изменится.
+#
+# Заодно это демонстрация главной фишки репозитория: пример возвращает ненулевой
+# код выхода при проблеме с сертификатом, поэтому джоб краснеет САМ, без парсинга
+# вывода. Ровно так его и ставят в свой CI.
+name: examples
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    # Каждый понедельник в 06:00 UTC — проверка, что примеры не разошлись с API.
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+jobs:
+  python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r requirements.txt
+        working-directory: python
+      - run: python main.py
+        working-directory: python
+
+  node:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm install
+        working-directory: node
+      - run: npm run typecheck
+        working-directory: node
+      - run: npm start
+        working-directory: node
+
+  go:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+      - run: go vet ./...
+        working-directory: go
+      - run: go run .
+        working-directory: go
+
+  java:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - run: java Main.java
+        working-directory: java
+
+  csharp:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0'
+      - run: dotnet run
+        working-directory: csharp
+
+  php:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: curl, mbstring
+      - run: php main.php
+        working-directory: php
